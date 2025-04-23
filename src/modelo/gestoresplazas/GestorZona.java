@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 
 import list.IList;
+import list.ArrayList;
 import modelo.gestoresplazas.huecos.GestorHuecos;
 import modelo.gestoresplazas.huecos.Hueco;
 import modelo.gestoresplazas.huecos.Plaza;
@@ -57,38 +58,69 @@ public class GestorZona {
 	//TO-DO alumno obligatorios
 	
 	public GestorZona(int i, int j, int noPlazas, double precio) {
-		//TO-DO
+		this.iZona = i;
+		this.jZona = j;
+		this.plazas = new Plaza[noPlazas];
+		for(int k = 0; k < noPlazas; k++) {
+			plazas[k] = new Plaza(k);
+		}
+		this.gestorHuecos = new GestorHuecos(plazas);
+		this.listaEspera = new ArrayList<SolicitudReservaAnticipada>();
+		this.huecosReservados = new ArrayList<Hueco>();
+		
+		
 	}
 	
 	public Hueco reservarHueco(LocalDateTime tI, LocalDateTime tF) {
-		//TO-DO
-		return null;
+		if(gestorHuecos.existeHueco(tI, tF)) {
+			Hueco res = gestorHuecos.reservarHueco(tI, tF);
+			huecosReservados.add(huecosReservados.size(), res);
+			return res;
+		}else {
+			return null;
+		}
 	}
 	
 	public boolean existeHueco(LocalDateTime tI, LocalDateTime tF) {
-		return false;
+		return gestorHuecos.existeHueco(tI, tF);
 	}
 	
 	
 	public void meterEnListaEspera(SolicitudReservaAnticipada solicitud) {
-		//TO-DO
+		listaEspera.add(listaEspera.size(), solicitud);
 	}
 	
 	public boolean existeHuecoReservado(Hueco hueco) {
-		//TO-DO
-		return false;
+		return huecosReservados.indexOf(hueco) != -1;
 	}
 	
 	//TO-DO alumno opcionales
 	
 	public void liberarHueco(Hueco hueco) {
-		//TO-DO
+		huecosReservados.remove(hueco);
+		gestorHuecos.liberarHueco(hueco);
 	}
 
 	//PRE (no es necesario comprobar): las solicitudes de la lista de espera son válidas
 	public IList<SolicitudReservaAnticipada> getSolicitudesAtendidasListaEspera() {
-		//TO-DO
-		return null;
+		IList<SolicitudReservaAnticipada> res = new ArrayList<SolicitudReservaAnticipada>();
+		IList<Hueco> huecosALiberar = new ArrayList<Hueco>();
+		for(int i = 0; i < listaEspera.size(); i++) {
+			if(gestorHuecos.existeHueco(listaEspera.get(i).getTInicial(), listaEspera.get(i).getTFinal())) {				
+				huecosALiberar.add(huecosALiberar.size(), 
+						gestorHuecos.reservarHueco(listaEspera.get(i).getTInicial(), listaEspera.get(i).getTFinal()));
+				res.add(res.size(), listaEspera.get(i));
+				listaEspera.remove(listaEspera.get(i));
+				i--;
+				System.out.println("a-- " + res.toString());
+			}
+		}
+		int huecosALiberarSize = huecosALiberar.size();
+		for(int i = 0; i < huecosALiberarSize; i++) {
+			gestorHuecos.liberarHueco(huecosALiberar.get(0));
+			huecosALiberar.removeElementAt(0);		}
+		
+		return res;
 	}
 
 	

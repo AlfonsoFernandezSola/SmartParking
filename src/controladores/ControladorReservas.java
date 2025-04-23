@@ -40,39 +40,94 @@ public class ControladorReservas {
 
 	//TO-DO alumno obligatorio
 
+	/**
+	 * PRE: plazas y precios son matrices NxM (de igual dimensión)
+	 * @param plazas Array con el número de plazas de cada gestor
+	 * @param precios Array con los precios de cada gestor
+	 */
 	public ControladorReservas(int[][] plazas, double[][] precios) {
-		//TO-DO
+		this.registroReservas = new Reservas();
+		this.gestorLocalidad = new GestorLocalidad(plazas, precios);
 	}
 
-
-	//PRE: la solicitud es válida
+	/**
+	 * PRE: la solicitud es válida
+	 * Gestiona y registra la solicitud de reserva dada. Si la solicitud es registrada correctamente, devuelve su número de reserva.
+	 * En caso contrario, devuelve -1
+	 * @param solicitud Solicitud de reserva dada
+	 * @throws SolicitudReservaInvalida
+	 */
 	public int hacerReserva(SolicitudReserva solicitud) throws SolicitudReservaInvalida {
-		//TO-DO
-		return -1;
+		if (!solicitud.esValida(gestorLocalidad)) {
+			throw new SolicitudReservaInvalida("La solicitud de reserva no es válida. Para que sea válida, la zona tiene que existir"
+					+ " en la localidad, el intervalo de tiempo tiene que ser coherente y el vehículo no puede estar sancionado.");
+		}
+		solicitud.gestionarSolicitudReserva(gestorLocalidad);
+		if (solicitud.getHueco() != null) {
+			return this.registroReservas.registrarReserva(solicitud);
+		}
+		else {
+			return -1;
+		}
 	}
-
+	/**
+	 * PRE: existe la reserva asociada al número dado
+	 * Devuelve la reserva asociada al número dado
+	 * @param numReserva Número de reserva dado
+	 */
 	public Reserva getReserva(int numReserva) {
-		//TO-DO
-		return null;
+		return this.registroReservas.obtenerReserva(numReserva);
 	}
 
-	//PRE: la plaza dada está libre y la reserva está validada
-	public void ocuparPlaza(int i, int j, int numPlaza, int numReserva, Vehiculo vehiculo) throws PlazaOcupada, ReservaInvalida {
-		//TO-DO
+	/**
+	 * PRE: la plaza dada está libre y la reserva está validada
+	 * Ocupa la plaza asociada a la reserva dada con el vehículo dado
+	 * @param i Fila de la zona en la localidad
+	 * @param j Columna de la zona en la localidad
+	 * @param numPlaza Número de plaza dado
+	 * @param numReserva Número de reserva dado
+	 * @param vehiculo Vehículo que intenta ocupar la plaza
+	 * @throws PlazaOcupada
+	 * @throws ReservaInvalida
+	 */
+	public void ocuparPlaza(int i, int j, int numPlaza, int numReserva, Vehiculo vehiculo) 
+			throws PlazaOcupada, ReservaInvalida {
+		if (!this.esValidaReserva(i, j, numPlaza, numReserva, vehiculo.getMatricula())){
+			throw new ReservaInvalida("La reserva no ha sido validada aún.");
+		}
+		if (this.registroReservas.obtenerReserva(numReserva).getHueco() != null) {
+			throw new PlazaOcupada ("La plaza ya está ocupada.");
+		}
+		this.registroReservas.obtenerReserva(numReserva).validar(i, j, numPlaza, vehiculo.getMatricula(), gestorLocalidad);
 	}
 
 
 	//TO-DO alumno opcional
+	
+	//Libera el hueco en una reserva
+	private void liberarHuecoReservado(int numReserva) {
+		this.registroReservas.obtenerReserva(numReserva).liberarHuecoReservado();
+	}
 
+	/**
+	 * Desocupa la plaza asociada a la reserva dada y libera el hueco asociado a la reserva
+	 * @param numReserva Número de reserva dado
+	 */
 	public void desocuparPlaza(int numReserva) {
-		//TO-DO
+		this.registroReservas.obtenerReserva(numReserva).getHueco().getPlaza().setVehiculo(null);
+		this.liberarHuecoReservado(numReserva);
 	}
 
+	/**
+	 * Anula la reserva, liberando el hueco asociado a la reserva y borrando la reserva del registro de reservas
+	 * @param numReserva
+	 */
 	public void anularReserva(int numReserva) {
-		//TO-DO
+		this.liberarHuecoReservado(numReserva);
+		this.registroReservas.borrarReserva(numReserva);
 	}
 
-		
+
 	// PRE (no es necesario comprobar): todas las solicitudes atendidas son válidas.
 	public IList<Integer> getReservasRegistradasDesdeListaEspera(int i, int j){
 		//TO-DO

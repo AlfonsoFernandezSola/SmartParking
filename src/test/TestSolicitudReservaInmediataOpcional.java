@@ -15,6 +15,7 @@ import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 import modelo.gestoresplazas.GestorLocalidad;
+import modelo.gestoresplazas.GestorZona;
 import modelo.gestoresplazas.huecos.Hueco;
 import modelo.reservas.solicitudesreservas.SolicitudReservaInmediata;
 import modelo.vehiculos.Vehiculo;
@@ -45,6 +46,7 @@ public class TestSolicitudReservaInmediataOpcional {
 			{1.0, 1.0, 1.0, 1.0, 1.0},
 			{1.0, 1.0, 1.0, 1.0, 1.0} };
 
+	
 
 	/**
 	 * Comprueba la definición del atributo radio
@@ -86,9 +88,11 @@ public class TestSolicitudReservaInmediataOpcional {
 		boolean[] validas = {true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false};
 
 		SolicitudReservaInmediata solicitud;
+		System.out.println("radiomax x: " + gestorLocalidad.getRadioMaxI() + "  radiomax y:" + gestorLocalidad.getRadioMaxJ());
 		
 		for(int i = 0; i < posI.length; i++) {
 			solicitud = new SolicitudReservaInmediata(posI[i], posJ[i], tI, tF, car, radios[i]);
+			System.out.println("Solicitud n " + (i + 1) + ": " + solicitud.toString() + "es valida: " + solicitud.esValida(gestorLocalidad));
 			if(validas[i]) {
 				assertTrue("No se ha clasificado correctamente una solicitud válida", solicitud.esValida(gestorLocalidad));
 			} else {
@@ -187,6 +191,17 @@ public class TestSolicitudReservaInmediataOpcional {
 		int[] pathJ = {1, 0, 1, 2, 2, 1, 3, 0};
 		
 		for(int i=0; i<pathI.length; i++) {
+			
+			System.out.println("" + i + "...");
+			System.out.println("\033[31m");
+			for(int w = 0; w < 5; w++) {
+				for(int j =0; j<5; j++) {
+					System.out.print( gestorLocalidad.getGestorZona(w, j) + ": " + gestorLocalidad.getGestorZona(w, j).getEstadoHuecosLibres());
+				}
+				System.out.println("");
+			}
+			System.out.print("\u001B[0m");
+			
 			SolicitudReservaInmediata solicitud = 
 					new SolicitudReservaInmediata(0, 1, tI, tF, car, 2);
 			solicitud.gestionarSolicitudReserva(gestorLocalidad);
@@ -197,10 +212,19 @@ public class TestSolicitudReservaInmediataOpcional {
 	
 	private void comprobarSolicitud(int i, int j, SolicitudReservaInmediata solicitud, GestorLocalidad gestorLocalidad) {		
 		
+		
+		if(gestorLocalidad.getGestorZona(i, j) == solicitud.getGestorZona()) {
+			System.out.println("Gestor correcto");
+		}else {
+			System.out.println("Gestor incorrecto (" + solicitud.getGestorZona().toString() + "). Debió ser " + gestorLocalidad.getGestorZona(i, j).toString());
+		}
+		
 		assertEquals("No se ha guardado el gestor de zona correcto en la reserva", 
 				gestorLocalidad.getGestorZona(i, j), solicitud.getGestorZona());
 
 		Hueco hueco = solicitud.getHueco();
+		
+		System.out.println("hueco: " + hueco);
 
 		assertTrue("No se ha guardado el hueco en la reserva", hueco != null);
 
@@ -216,6 +240,8 @@ public class TestSolicitudReservaInmediataOpcional {
 		// nos aseguramos de que pasa el test de gestionar reservas, cuando hay huecos
 		// para evitar que se pase este test si no está implementado el método gestionarSolicitudReserva()
 		comprobarGestionarReservaCompletada(); 
+		
+		System.out.println("PASÓ COMRPOBRARGESTIONARRESREVACOMPLETADA");
 		
 		int[][] plazas1 = 
 			{ 	{1, 0, 0, 0, 0},
@@ -274,6 +300,10 @@ public class TestSolicitudReservaInmediataOpcional {
 				fail(e.getMessage()+"\nDebe declarar el atributo "+attrNames[i]+" en la clase "+className);
 			} 
 		}
+	}
+	
+	private void printArray(GestorZona[][] array) {
+		
 	}
 
 }

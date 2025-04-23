@@ -70,13 +70,27 @@ public class SolicitudReserva {
 	
 	//TO-DO alumno obligatorio
 	
+	/**
+	 * Indica si la zona, el intervalo de tiempo y el estado del vehículo son válidos
+	 * @param gestorLocalidad Gestor de localidad a comprobar
+	 */
 	public boolean esValida(GestorLocalidad gestorLocalidad) {
-		//TO-DO
-		return false;
+		return tInicial.compareTo(tFinal) < 0
+				&& !vehiculo.getSancionado()
+				&& gestorLocalidad.existeZona(iZona, jZona);
 	}
 	
+	/**
+	 * PRE: El gestor dado es válido
+	 * Inicializa el atributo de gestorZona con el gestor de la zona (i, j) e intenta reservar un hueco en dicho gestor.
+	 * Si no existe hueco, el atributo de hueco se queda como null
+	 * @param gestor Gestor dado
+	 */
 	public void gestionarSolicitudReserva(GestorLocalidad gestor) {
-		//TO-DO	
+		if (this.esValida(gestor)) {
+			this.gestorZona = gestor.getGestorZona(iZona, jZona);
+			this.hueco = gestor.getGestorZona(iZona, jZona).reservarHueco(tInicial, tFinal);
+		}
 	}
 
 }
